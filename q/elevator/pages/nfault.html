@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.4/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+
+<body>
+    <div class="layuimini-container">
+        <div class="layuimini-main">
+
+
+
+            <fieldset class="layui-elem-field layuimini-search">
+
+                <legend>搜索信息</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">故障地点</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="search" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <a class="layui-btn" lay-submit="" lay-filter="data-search-btn">搜索</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </fieldset>
+
+            <div class="layui-btn-group">
+
+            
+
+            </div>
+            <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+            <script type="text/html" id="currentTableBar">
+            </script>
+        </div>
+    </div>
+
+   
+
+
+    <script type="text/html" id="submit">
+    <input type="checkbox" name="submit" value="{{d.id}}" lay-skin="switch" lay-text="是|否" lay-filter="submit"
+    {{d.submit == 0 ? '' : 'checked' }}>
+</script>
+
+    <script type=" text/html" id="xuhao">
+    {{d.LAY_TABLE_INDEX+1}}
+    </script>
+
+    <script src="../lib/layui-v2.5.4/layui.js" charset="utf-8"></script>‘
+    <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+    <script src="../js/p-ajax.js" charset="utf-8"></script>
+    <script src="../network/network.js" charset="utf-8"></script>
+    <script>
+        //每次进入刷新
+        layui.use(['form', 'table', 'layer'], function () {
+            var $ = layui.jquery,
+                form = layui.form,
+                table = layui.table,
+                layer = layui.layer;
+
+            table.render({
+                elem: '#currentTableId',
+                url: url + 'fault',
+                cols: [
+                    [{
+                            type: "checkbox",
+                            width: 50,
+                            fixed: "left"
+                        },
+                        {
+                            width: 100,
+                            title: 'ID',
+                            sort: true,
+                            templet: "#xuhao",
+                            align: "center"
+                        },
+                        {
+                            field: 'address',
+                            width: 200,
+                            title: '故障所处地点',
+                        },
+                        {
+                            field: 'phone',
+                            width: 200,
+                            title: '联系人手机号',
+                        },
+                        {
+                            field: 'addName',
+                            width: 200,
+                            title: '提交人',
+                        },
+                        {
+                            field: 'describe',
+                            width: 200,
+                            title: '描述信息',
+                            templet: function (data) {
+                                return data.describe === "" ? "未填写" : data.describe;
+                            }
+                        },
+                        {
+                            field: 'submit',
+                            width: 200,
+                            title: '是否提交修复',
+                            align: "center",
+                            templet: function (data) {
+                                return data.submit === 0 ? "否" : "是";
+                            }
+
+                        },
+                        {
+                            field: 'repair',
+                            width: 200,
+                            title: '是否修复完成',
+                            align: "center",
+                            templet:  function (data) {
+                                return data.repair === 0 ? "未修复" : "已修复";
+                            }
+
+                        },
+                        {
+                            field: 'addtime',
+                            width: 200,
+                            title: '添加时间',
+                            sort: true,
+
+                        }
+                    ]
+                ],
+
+                width: "200px",
+                limits: [10, 15, 20, 25, 50, 100],
+                limit: 15,
+                page: true
+            });
+
+            // 监听搜索操作
+            form.on('submit(data-search-btn)', function (data) {
+                //执行搜索重载
+                table.reload('currentTableId', {
+                    page: {
+                        curr: 1
+                    },
+                    where: {
+                        search: data.field.search
+                    }
+                }, 'data');
+
+                return false;
+            });
+
+
+
+            table.on('edit(currentTableFilter)', function (obj) {
+
+                var old = $(this).prev().text(); //旧值
+
+
+                if (obj.field = "address") {
+                    if (obj.value === "" || obj.value == null) {
+                        layer.msg("输入为空", {
+                            time: 1000,
+                        })
+                        $(this).val(old); //重新掰回来 
+                    }
+                }
+                chance_elevator(obj.data).then(res => {
+                    if (res.code != 200) {
+                        layer.msg(res.message);
+                    }
+                });
+
+            })
+
+  
+
+            //监听是否提交
+            form.on('switch(submit)', function (obj) {
+                let ischek = obj.elem.checked;
+                let number1 = 0;
+                
+                if (ischek) {
+                    number = 1;
+                } else {
+                    number = 0;
+                }
+                chance_fault_s({
+                    id: this.value,
+                    submit: number
+                }).then(res => {
+                    if (res.code != 200) {
+                        layer.msg(res.message, {
+                            time: 1000,
+                            icon: 2
+                        })
+
+                    }
+                })
+            });
+
+        });
+    </script>
+    <script>
+
+    </script>
+
+</body>
+
+</html>

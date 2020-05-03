@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>会议签到系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.4/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+
+    <style type="text/css">
+        .layui-laydate-content>.layui-laydate-list {
+            padding-bottom: 0px;
+            overflow: hidden;
+        }
+
+        .layui-laydate-content>.layui-laydate-list>li {
+            width: 50%
+        }
+
+        .merge-box .scrollbox .merge-list {
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="layuimini-container" style="display:none;" id="modify">
+        <div class="layuimini-main">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+                <legend>修改人员</legend>
+            </fieldset>
+
+            <form class="layui-form" action="" id=modifyform lay-filter="modify">
+                <input type="text" name="id" id="id" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账号名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" lay-verify="meeting_name" readonly  autocomplete="off"
+                            placeholder="请输入用户名称" class="layui-input">
+                    </div>
+                </div>
+      
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">角色信息</label>
+                    <div class="layui-input-block">
+                        <select name="role" lay-filter="aihao">
+                            <!-- 这里应该动态获取的 -->
+                            <option value="ROLE_USER">ROLE_USER</option>
+                            <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+                            <option value="ROLE_REP">ROLE_REP</option>
+                        </select>
+                    </div>
+                </div>
+  
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">性别</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="sex" value="男" title="男" checked="">
+                        <input type="radio" name="sex" value="女" title="女">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户年龄</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="age" autocomplete="off" placeholder="请输入用户年龄" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">联系方式</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="phone" autocomplete="off" placeholder="请输入手机号码" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">技术等级</label>
+                    <div class="layui-input-block">
+                        <select name="level">
+                            <option value="1">一级</option>
+                            <option value="2">二级</option>
+                            <option value="3">三级</option>
+                            <option value="4">四级</option>
+                            <option value="5">五级</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="layui-form-item" pane="">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="isenabled" value="0" title="可用" checked="">
+                        <input type="radio" name="isenabled" value="1" title="不可用">
+                    </div>
+                </div>
+
+
+
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- //会议列表 -->
+    <div class="layuimini-container">
+        <div class="layuimini-main">
+
+            <fieldset class="layui-elem-field layuimini-search">
+                <legend>搜索信息</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">所属地址</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="meetingName" id=search autocomplete="off"
+                                        class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <a class="layui-btn" lay-submit="" lay-filter="data-search-btn">点击搜索</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </fieldset>
+
+            <div class="layui-btn-group">
+                <button class="layui-btn layui-btn-danger data-delete-btn">删除</button>
+            </div>
+            <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+            <script type="text/html" id="currentTableBar">
+                <a class="layui-btn layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+            </script>
+        </div>
+    </div>
+    <script src="../lib/layui-v2.5.4/layui.js" charset="utf-8"></script>
+    <script src="../js/p-ajax.js" charset="utf-8"></script>
+    <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+    <script src="../network/network.js" charset="utf-8"></script>
+    <script type="text/html" id="xuhao">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+
+    <script>
+        layui.use(['form', 'table', 'laydate'], function () {
+            var $ = layui.jquery,
+                form = layui.form,
+                laydate = layui.laydate,
+                table = layui.table;
+            table.render({
+                elem: '#currentTableId',
+                url: url + '/user',
+                loading: "true",
+                cols: [
+                    [{
+                            type: "radio",
+                            width: 50,
+                            fixed: "left"
+                        },
+                        {
+                            width: 80,
+                            title: 'ID',
+                            sort: true,
+                            templet: "#xuhao",
+                            align: "center"
+                        },
+                        {
+                            field: 'username',
+                            width: 150,
+                            title: '账号名称',
+                            align: "center"
+                        },
+                        {
+                            field: 'sex',
+                            width: 80,
+                            title: '性别',
+                            align: "center",
+                           
+                        },
+                        {
+                            field: 'phone',
+                            width: 150,
+                            title: '联系方式',
+                            align: "center",
+                           
+                        },
+                        {
+                            field: 'age',
+                            width: 80,
+                            title: '年龄',
+                            align: "center",
+                           
+                        },
+                        {
+                            field: 'zone',
+                            width: 200,
+                            title: '所处地址',
+                            align: "center",
+                            templet: function (data) {
+                                return data.zone === null ? "无" : data.zone;
+                            }
+                        },
+                        {
+                            field: 'address',
+                            width: 100,
+                            title: '上次登录地点',
+                            align: "center",
+                            templet: function (data) {
+                                return data.address === null ? "未登录" : data.address;
+                            }
+                        },
+                        {
+                            field: 'lasttime',
+                            width: 240,
+                            title: '上次登录时间',
+                            align: "center",
+                            templet: function (data) {
+                                return data.lasttime === null ? "未登录" : data.lasttime;
+                            }
+                        },
+                        {
+                            field: 'role',
+                            width: 130,
+                            title: '角色',
+                            align: "center",
+                            templet: function (data) {
+                                if (data.role === "ROLE_USER") {
+                                    return "用户"
+                                } else if (data.role === "ROLE_ADMIN") {
+                                    return "超级管理员"
+                                } else if (data.role === "ROLE_REP") {
+                                    return "维修员"
+                                }
+                            }
+                        },
+                        {
+                            field: 'isenabled',
+                            width: 110,
+                            title: '状态',
+                            align: "center",
+                            templet: function (data) {
+                                return data.isenabled === 0 ? "可用" : "不可用";
+                            }
+                        },
+                        {
+                            title: '操作',
+                            minWidth: 50,
+                            templet: '#currentTableBar',
+                            fixed: "right",
+                            align: "center"
+                        }
+                    ]
+                ],
+                hight: 500,
+                limits: [10, 15, 20, 50, 100],
+                limit: 15,
+                page: true,
+                text: {
+                    none: '无数据'
+                }
+            });
+
+            // 监听搜索操作
+            form.on('submit(data-search-btn)', function (data) {
+
+                //执行搜索重载
+                table.reload('currentTableId', {
+                    page: {
+                        curr: 1
+                    },
+                    where: {
+                        search: $("#search").val()
+                    }
+                }, 'data');
+                return false;
+            });
+
+            // 监听删除操作
+            $(".data-delete-btn").on("click", function () {
+
+                layer.alert("不支持删除，不想该账号登录请设置账号不可用")
+
+            });
+
+
+
+            table.on('tool(currentTableFilter)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'edit') {
+                    // layer.alert('编辑行：<br>' + data["id"])
+                    layer.open({
+                        title: "修改人员信息",
+                        type: 1,
+                        area: ['500px', '500px'],
+                        btn: ['确定修改'],
+                        success: function (layero, index) {
+                            //点击之后回显
+                            form.val('modify', {
+                                "id": data["id"],
+                                "username": data["username"],
+                                "sex":data["sex"],
+                                "age":data["age"],
+                                "phone":data["phone"],
+                                "role": data["role"],
+                                "level": data["level"],
+                                "isenabled": data["isenabled"],
+                            })
+
+                        },
+
+                        yes: function () {
+
+                            layer.msg('修改中', {
+                                icon: 16,
+                                shade: 0.01
+                            });
+
+                            chance_user($("#modifyform").serialize()).then(res => {
+
+                                if (res.code === 200) {
+                                    layer.msg(res.data, {
+                                        time: 1000,
+                                    }, function () {
+                                        location.reload();
+                                    });
+
+                                } else {
+                                    layer.msg(res.message, {
+                                        time: 1000,
+                                        icon: 2
+                                    })
+                                }
+
+                            })
+
+                        },
+                        content: $("#modify")
+                    });
+                }
+            });
+
+        });
+    </script>
+    <script>
+
+    </script>
+
+</body>
+
+</html>

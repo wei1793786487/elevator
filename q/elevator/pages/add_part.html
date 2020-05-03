@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.4/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <style type="text/css">
+        .layui-laydate-content>.layui-laydate-list {
+            padding-bottom: 0px;
+            overflow: hidden;
+        }
+
+        .layui-laydate-content>.layui-laydate-list>li {
+            width: 50%
+        }
+
+        .merge-box .scrollbox .merge-list {
+            padding-bottom: 5px;
+        }
+
+        .BMap_cpyCtrl {
+            display: none;
+        }
+
+        .anchorBL {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <div class="layuimini-container">
+        <div class="layuimini-main">
+
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+                <legend>新增零件信息</legend>
+            </fieldset>
+            <form class="layui-form" action="#" lay-filter="example">
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">零件名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="name" lay-verify="address" autocomplete="off" placeholder="请输入零件的名称"
+                            class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数量</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="number" id="number" autocomplete="off" placeholder="请输入零件的数量"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">进价</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="purchasePrice" id="number" autocomplete="off" placeholder="请输入零件的进价"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">售价</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="price" id="number" autocomplete="off" placeholder="请输入零件的售价"
+                            class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit="demo1" lay-filter="demo1">新增零件</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="../lib/layui-v2.5.4/layui.js" charset="utf-8"></script>
+    <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+    <script src="../js/p-ajax.js" charset="utf-8"></script>
+    <script src="../js/axios.js" charset="utf-8"></script>
+    <script src="../network/network.js" charset="utf-8"></script>
+    </script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+    <script>
+        function isNumber(value) { //验证是否为数字
+            var patrn = /^(-)?\d+(\.\d+)?$/;
+            if (patrn.exec(value) == null || value == "") {
+                return false
+            } else {
+                return true
+            }
+        }
+
+
+        layui.use(['form', 'laydate', "layer"], function () {
+
+            var form = layui.form,
+                layer = layui.layer
+            // 自定义验证规则
+            form.verify({
+                address: function (value) {
+                    if (value.length == "") {
+                        return '零件名称不能为空';
+                    }
+                }
+           
+            });
+
+            //监听提交
+            form.on('submit(demo1)', function (data) {
+                layer.msg('添加中', {
+                    icon: 16,
+                    shade: 0.01
+                });
+
+               var number= $("#number").val();
+                var is = isNumber(number);
+                if (!is) {
+                    layer.msg("数量请输入数字", {
+                        time: 1000,
+                        icon: 2
+                    })
+                    return false;
+                }
+                var data = data.field
+                add_part(data).then(res => {
+                    if (res.code === 200) {
+                        layer.msg(res.data, {
+                            time: 1000,
+                        }, function () {
+                            location.reload();
+                        });
+                    } else {
+                        layer.msg(res.message, {
+                            time: 1000,
+                            icon: 2
+                        })
+                    }
+                })
+                return false;
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>

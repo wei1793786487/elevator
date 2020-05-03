@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.4/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+
+<body>
+    <div class="layuimini-container">
+        <div class="layuimini-main">
+
+
+
+            <fieldset class="layui-elem-field layuimini-search">
+
+                <legend>搜索信息</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">故障地点</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="search" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <a class="layui-btn" lay-submit="" lay-filter="data-search-btn">搜索</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </fieldset>
+
+            <div class="layui-btn-group">
+
+
+            </div>
+            <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+            <script type="text/html" id="currentTableBar">
+                <a class="layui-btn layui-btn-xs data-count-edit" lay-event="edit">填写故障记录单</a>
+                <a class="layui-btn layui-btn-xs data-count-edit" lay-event="chance">修改为结单</a>
+            </script>
+        </div>
+    </div>
+
+    <!-- <script type="text/html" id="repair">
+    <input type="checkbox" name="repair" value="{{d.id}}" lay-skin="switch" lay-text="是|否|" lay-filter="repair"
+        {{d.repair == 0 ? '' : 'checked' }}>
+    </script>
+
+
+    <script type="text/html" id="submit">
+    <input type="checkbox" name="submit" value="{{d.id}}" lay-skin="switch" lay-text="是|否" lay-filter="submit"
+    {{d.submit == 0 ? '' : 'checked' }}>
+</script> -->
+
+    <script type=" text/html" id="xuhao">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+
+    <script src="../lib/layui-v2.5.4/layui.js" charset="utf-8"></script>‘
+    <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+    <script src="../js/p-ajax.js" charset="utf-8"></script>
+    <script src="../network/network.js" charset="utf-8"></script>
+    <script>
+        //每次进入刷新
+        layui.use(['form', 'table', 'layer'], function () {
+            var $ = layui.jquery,
+                form = layui.form,
+                table = layui.table,
+                layer = layui.layer;
+
+            table.render({
+                elem: '#currentTableId',
+                url: url + 'fault',
+                cols: [
+                    [{
+                            type: "checkbox",
+                            width: 50,
+                            fixed: "left"
+                        },
+                        {
+                            width: 100,
+                            title: 'ID',
+                            sort: true,
+                            templet: "#xuhao",
+                            align: "center"
+                        },
+                        {
+                            field: 'address',
+                            width: 200,
+                            title: '故障所处地点',
+                            templet: function (data) {
+                                return data.zone + data.address;
+                            }
+                        },
+                        {
+                            field: 'addName',
+                            width: 150,
+                            title: '提交人',
+                        },
+                        {
+                            field: 'phone',
+                            width: 120,
+                            title: '联系人手机号',
+                        },
+                        {
+                            field: 'describe',
+                            width: 200,
+                            title: '描述信息',
+                            templet: function (data) {
+                                return data.describe === "" ? "未填写" : data.describe;
+                            }
+                        },
+                        {
+                            field: 'submit',
+                            width: 200,
+                            title: '是否提交修复',
+                            align: "center",
+                            templet: function (data) {
+                                return data.submit === 1 ? "已提交" : "未提交";
+                            }
+
+                        },
+                        {
+                            field: 'repair',
+                            width: 200,
+                            title: '维修状态',
+                            align: "center",
+                            templet: function (data) {
+                                if (data.repair === 0) {
+                                    return "维修中"
+                                }
+                                if (data.repair === 1) {
+                                    return "维修完成"
+                                }
+                                if (data.repair === 2) {
+                                    return "已结单"
+                                }
+                            }
+
+                        },
+
+                        {
+                            title: '操作',
+                            templet: '#currentTableBar',
+                            fixed: "right",
+                            align: "center"
+                        }
+                    ]
+                ],
+
+
+                limits: [10, 15, 20, 25, 50, 100],
+                limit: 15,
+                page: true
+            });
+
+            // 监听搜索操作
+            form.on('submit(data-search-btn)', function (data) {
+                //执行搜索重载
+                table.reload('currentTableId', {
+                    page: {
+                        curr: 1
+                    },
+                    where: {
+                        search: data.field.search
+                    }
+                }, 'data');
+
+                return false;
+            });
+
+            table.on('tool(currentTableFilter)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'edit') {
+                    layer.confirm('是否已完成维修', {
+                        btn: ['已完成', '未完成'] //按钮
+                    }, function () {
+                        if (data.repair != 0) {
+                            layer.msg("已经维修完成,禁止填写", {
+                                time: 1000,
+                            })
+                            return
+                        }
+                        var index = layer.open({
+                            title: '',
+                            type: 2,
+                            shade: 0.2,
+                            maxmin: true,
+                            shadeClose: true,
+                            area: ['100%', '100%'],
+                            content: 'add_record.html?id=' + data["id"],
+                        });
+                        $(window).on("resize", function () {
+                            layer.full(index);
+                        });
+                    }, function () {
+                        return
+                    });
+
+                }
+   
+                if (obj.event === 'chance') {
+                    console.log("dadadadadad");
+                    
+                    if (obj.data.repair != 1) {
+                        layer.msg("仅可修改维修完成且未结单的账单", {
+                            time: 1000,
+                        })
+                        return;
+                    }
+                    chance_fault_r({
+                            id: obj.data.id,
+                            repair: "2"
+                        }).then(res => {
+                            layer.msg("修改完成", {
+                                time: 1000,
+                            }, function () {
+                                location.reload();
+                            })
+                        })
+                }
+            });
+
+
+
+        });
+    </script>
+    <script>
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.5.4/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+
+<body>
+
+    <div id="item" style="display: none;">
+        <form  lay-filter="example">
+            <div class="layui-form-item">
+                <label class="layui-form-label">电梯所在地点</label>
+                <div class="layui-input-block">
+                    <input type="text" name="zone" readonly lay-verify="zone" autocomplete="off" placeholder="请输入电梯详细地址"
+                        class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">详细地址</label>
+                <div class="layui-input-block">
+                    <input type="text" name="address" readonly lay-verify="address" autocomplete="off" placeholder="请输入电梯详细地址"
+                        class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">电梯类型</label>
+                <div class="layui-input-block">
+                    <input type="text" id="type"  readonly autocomplete="off" placeholder="请输入电梯型号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">电梯型号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="model" readonly id="model" lay-verify="address_name" autocomplete="off"
+                        placeholder="请输入电梯型号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">电梯品牌</label>
+                <div class="layui-input-block">
+                    <input type="text" name="brand" readonly autocomplete="off" placeholder="请输入电梯品牌" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">使用单位</label>
+                <div class="layui-input-block">
+                    <input type="text" name="useUnit" readonly lay-verify="use_unit" autocomplete="off" placeholder="请输入使用单位"
+                        class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">联系人姓名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="person" readonly autocomplete="off" placeholder="请输入联系人姓名" class="layui-input">
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">联系人电话</label>
+                <div class="layui-input-block"> 
+                    <input type="text" name="phone"  readonly autocomplete="off" placeholder="请输入联系人电话" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">维护周期(天)</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="cycle" readonly id="cycle" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div>
+
+            </div>
+    </div>
+
+
+    </form>
+
+
+
+    </div>
+
+
+
+
+    <div class="layuimini-container">
+        <div class="layuimini-main">
+
+
+
+            <fieldset class="layui-elem-field layuimini-search">
+
+                <legend>搜索信息</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">维保地点</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="search" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <a class="layui-btn" lay-submit="" lay-filter="data-search-btn">搜索</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </fieldset>
+
+            <div class="layui-btn-group">
+
+
+            </div>
+            <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+            <script type="text/html" id="currentTableBar">
+                <a class="layui-btn layui-btn-xs data-count-edit" lay-event="edit">查看电梯</a>
+            </script>
+        </div>
+    </div>
+
+
+
+    <script type=" text/html" id="xuhao">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+
+    <script src="../lib/layui-v2.5.4/layui.js" charset="utf-8"></script>‘
+    <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+    <script src="../js/p-ajax.js" charset="utf-8"></script>
+    <script src="../network/network.js" charset="utf-8"></script>
+
+    <script>
+        layui.use(['form', 'table', 'layer'], function () {
+            var $ = layui.jquery,
+                form = layui.form,
+                table = layui.table,
+                layer = layui.layer;
+
+            table.render({
+                elem: '#currentTableId',
+                url: url + 'maintenanceService',
+                cols: [
+                    [{
+                            type: "checkbox",
+                            width: 50,
+                            fixed: "left"
+                        },
+                        {
+                            width: 80,
+                            title: 'ID',
+                            sort: true,
+                            templet: "#xuhao",
+                            align: "center"
+                        },
+                        {
+                            field: 'addAddress',
+                            width: 200,
+                            title: '维保地点',
+                            templet: function (data) {
+                                if (data.addAddress === null) {
+                                    return "没有绑定电梯"
+                                }
+                                return data.addAddress === "" ? "未填写" : data.addAddress;
+                            }
+                        },
+                        {
+                            field: 'name',
+                            width: 200,
+                            title: '维保人员',
+                            templet: function (data) {
+                                return data.name === "" ? "未填写" : data.name;
+                            }
+                        },
+                        {
+                            field: 'phone',
+                            width: 200,
+                            title: '联系人电话',
+
+                        },
+                        {
+                            field: 'time',
+                            width: 200,
+                            title: '维保时间',
+                            templet: function (data) {
+                                return data.time === "" ? "未填写" : data.time;
+                            }
+                        },
+                        {
+                            field: 'result',
+                            title: '维保记录',
+                            templet: function (data) {
+                                return data.result === "" ? "未填写" : data.result;
+                            }
+                        },
+                        {
+                            title: '操作',
+                            templet: '#currentTableBar',
+                            fixed: "right",
+                            align: "center"
+                        }
+                    ]
+                ],
+                limits: [10, 15, 20, 25, 50, 100],
+                limit: 15,
+                page: true
+            });
+
+            // 监听搜索操作
+            form.on('submit(data-search-btn)', function (data) {
+                //执行搜索重载
+                table.reload('currentTableId', {
+                    page: {
+                        curr: 1
+                    },
+                    where: {
+                        search: data.field.search
+                    }
+                }, 'data');
+
+                return false;
+            });
+
+
+            table.on('tool(currentTableFilter)', function (obj) {
+                var data = obj.data;
+                console.log(data);
+                if (obj.event === 'edit') {
+                    layer.open({
+                        title: "电梯信息",
+                        type: 1,
+                        area: ['30%', '70%'],
+                        success: function (layero, index) {
+                            find_elevator_id(data.eid).then(res => {
+                                let data = res.data;
+                                console.log(data);
+                                $("input[name='address']").val(data.address);
+                                $("#type").val(data.type);
+                                $("input[name='model']").val(data.model);
+                                $("input[name='brand']").val(data.brand);
+                                $("input[name='useUnit']").val(data.useUnit);
+                                $("input[name='person']").val(data.person);
+                                $("input[name='phone']").val(data.phone);
+                                $("input[name='cycle']").val(data.cycle);
+                            })
+                        },
+                        content: $('#item')
+                    });
+                }
+            });
+
+        });
+    </script>
+    <script>
+
+    </script>
+
+</body>
+
+</html>
